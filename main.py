@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 load_dotenv()
 uri = os.environ.get('MONGO_CONNECTION_STRING')
@@ -26,6 +27,7 @@ except Exception as e:
 
 app = FastAPI()
 
+
 @app.get("/login/{tenant_name}")
 async def login(tenant_name: str) :
     collection = database["tenants"]
@@ -43,10 +45,28 @@ async def register(tenant_name: str):
     try :
         collection = database["tenants"]
         data = {
-            '_id': uuid.UUID(),
             'name': tenant_name,
         }
         collection.insert_one(data)
         return {"status": 200, "message": "Successfully Registered", "error": None}
     except Exception as e:
         return {"status": 500, "message": "Internal Server Error", "error": str(e)}
+
+
+class User(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+    tenant_id: str
+
+@app.get("/user/{email}")
+async def get_or_create_user(tenant_name: str, user: User) :
+    try :
+        collection = database["users"]
+        query = { "email" : user.email }
+        result = collection.find_one(query)
+        if not user :
+            result = collection.insert_one(user.__dict__)
+        return {"status": 200, "message": f'{user.email} created!', "data": result}
+    except Exception as e:
+        return { "status": 500, "message": "Internal Server Error", "error": str(e)}
