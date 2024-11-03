@@ -2,3 +2,4 @@ pymongo~=4.10.1
 certifi~=2024.7.4
 python-dotenv==0.13.0
 fastapi~=0.115.4
+pydantic~=2.9.2

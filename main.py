@@ -1,5 +1,4 @@
 import os
-import uuid
 
 import certifi
 from dotenv import load_dotenv
@@ -7,6 +6,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 uri = os.environ.get('MONGO_CONNECTION_STRING')
@@ -27,6 +27,17 @@ except Exception as e:
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/login/{tenant_name}")
 async def login(tenant_name: str) :
@@ -36,7 +47,7 @@ async def login(tenant_name: str) :
         result = collection.find_one(query)
         if not result :
             return {"status": 404, "message": f'{tenant_name} not found!', "error": "Not Found"}
-        return {"status": 200, "message": f'{tenant_name} logged in!', "data": result}
+        return {"status": 200, "message": f'{tenant_name} logged in!', "error": "Not Found"}
     except Exception as e:
         return { "status": 500, "message": "Internal Server Error!", "error": str(e)}
 
@@ -44,6 +55,7 @@ async def login(tenant_name: str) :
 async def register(tenant_name: str):
     try :
         collection = database["tenants"]
+        print("Collection: ", collection)
         data = {
             'name': tenant_name,
         }
