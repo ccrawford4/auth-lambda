@@ -7,6 +7,6 @@ Some Python code for CRUD operations with MongoDB
 2. Install dependencies
 - `pip install -r requirements.txt`
 3. Install FastAPI
-- `pip install "fastapi[standard]`
+- `pip install "fastapi[standard]"`
 4. Run the dev server
 `fastapi dev main.py`
